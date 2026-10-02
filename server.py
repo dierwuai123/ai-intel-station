@@ -32,6 +32,7 @@ RE_TOKEN = re.compile(r"^[A-Za-z0-9_]{20,128}$")
 RE_KW = re.compile(r"^[\w\u4e00-\u9fff .+\-]{1,60}$")
 
 _GH_TOKEN = {"v": None, "loaded": False}
+_VT_HITS = {}  # verify-token 每 IP 限速表 {ip: [ts,...]}
 
 def now():
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
@@ -42,6 +43,10 @@ def _date_days_ago(n):
 def db():
     c = sqlite3.connect(DB, timeout=20)
     c.execute("PRAGMA busy_timeout=20000")
+    try:
+        c.execute("PRAGMA journal_mode=WAL")  # 读写不互斥，采集长任务不再拖死页面查询
+    except Exception:
+        pass  # WAL 不可用时退回默认 journal，功能不受影响
     c.execute("""CREATE TABLE IF NOT EXISTS repos(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         kind TEXT, full_name TEXT, url TEXT, stars INTEGER, lang TEXT,
@@ -136,57 +141,67 @@ def fetch(url, timeout=20, headers=None):
         return {"_err": str(e)[:200]}
 
 def collect():
-    """同步采集：cron / POST /api/collect 调用"""
+    """同步采集：cron / POST /api/collect 调用。
+    先取数（无 DB 连接）后短事务写库——避免长事务持锁拖死并发写请求。"""
     s = get_settings()
+    my_repos = s["my_repos"][:20]
+    topics = s["search_topics"][:8]
+    days_window = s["days_window"]
+    ts = now()
+    # 1) 追踪仓库（0.8s 间隔防匿名限流）—— 纯网络取数，不开库
+    myrows = []
+    for repo in my_repos:
+        if not RE_REPO.match(repo):
+            continue
+        d = fetch(f"https://api.github.com/repos/{repo}")
+        if "full_name" in d:
+            rel = fetch(f"https://api.github.com/repos/{repo}/releases/latest")
+            rel_name = rel.get("tag_name", "") if "tag_name" in rel else ""
+            myrows.append((repo, d.get("stargazers_count", 0), d.get("forks_count", 0),
+                           d.get("subscribers_count", 0), d.get("open_issues_count", 0),
+                           rel_name, d.get("pushed_at", ""), ts))
+        time.sleep(0.8)
+    # 2) HN：先抓成功才替换（失败保留旧数据，防空窗）—— 纯网络取数
+    hn_new = []
+    d = fetch("https://hacker-news.firebaseio.com/v0/topstories.json")
+    for i in (d if isinstance(d, list) else [])[:15]:
+        it = fetch(f"https://hacker-news.firebaseio.com/v0/item/{i}.json")
+        if it and "title" in it:
+            hn_new.append((it["title"], it.get("url") or f"https://news.ycombinator.com/item?id={i}",
+                           it.get("score", 0)))
+    # 3) 工具抓取：按用户兴趣方向搜索 —— 纯网络取数
+    found, seen = [], set()
+    date_q = _date_days_ago(days_window)
+    for kw in topics:
+        kw = kw.strip()[:60]
+        if not kw or not RE_KW.match(kw.replace(" ", "+")):
+            continue
+        q = quote(kw.replace(" ", "+"), safe="+.-")
+        d = fetch(f"https://api.github.com/search/repositories?q={q}+created:%3E{date_q}&sort=stars&order=desc&per_page=8")
+        for it in d.get("items", []):
+            fn = it["full_name"]
+            if fn in seen:
+                continue
+            seen.add(fn)
+            found.append((kw[:20], fn, it["html_url"], it.get("stargazers_count", 0),
+                          it.get("language") or "", (it.get("description") or "")[:300],
+                          it.get("pushed_at", "")))
+        time.sleep(0.6)
+    # 短事务写库：全部取数完成后一次写入（持锁 <1s）
     c = db()
     try:
-        ts = now()
-        # 1) 追踪仓库（0.8s 间隔防匿名限流）
-        for repo in s["my_repos"][:20]:
-            if not RE_REPO.match(repo):
-                continue
-            d = fetch(f"https://api.github.com/repos/{repo}")
-            if "full_name" in d:
-                rel = fetch(f"https://api.github.com/repos/{repo}/releases/latest")
-                rel_name = rel.get("tag_name", "") if "tag_name" in rel else ""
-                c.execute("DELETE FROM myrepos WHERE full_name=?", (repo,))
-                c.execute("""INSERT INTO myrepos(full_name,stars,forks,watchers,open_issues,open_prs,release,pushed_at,fetched_at)
-                             VALUES(?,?,?,?,?,?,?,?,?)""",
-                          (repo, d.get("stargazers_count", 0), d.get("forks_count", 0),
-                           d.get("subscribers_count", 0), d.get("open_issues_count", 0), 0,
-                           rel_name, d.get("pushed_at", ""), ts))
-                time.sleep(0.8)
-        # 2) HN：先抓成功才替换（失败保留旧数据，防空窗）
-        hn_new = []
-        d = fetch("https://hacker-news.firebaseio.com/v0/topstories.json")
-        for i in (d if isinstance(d, list) else [])[:15]:
-            it = fetch(f"https://hacker-news.firebaseio.com/v0/item/{i}.json")
-            if it and "title" in it:
-                hn_new.append((it["title"], it.get("url") or f"https://news.ycombinator.com/item?id={i}",
-                               it.get("score", 0)))
+        # myrepos 插入（9 列）
+        for row in myrows:
+            repo, st, fk, w, oi, rel_name, ps, _ts = row
+            c.execute("DELETE FROM myrepos WHERE full_name=?", (repo,))
+            c.execute("""INSERT INTO myrepos(full_name,stars,forks,watchers,open_issues,open_prs,release,pushed_at,fetched_at)
+                         VALUES(?,?,?,?,?,?,?,?,?)""",
+                      (repo, st, fk, w, oi, 0, rel_name, ps, _ts))
         if hn_new:
             c.execute("DELETE FROM news WHERE src='hn'")
             for t, u, sc in hn_new:
                 c.execute("INSERT INTO news(src,title,url,score,fetched_at) VALUES(?,?,?,?,?)",
                           ("hn", t, u, sc, ts))
-        # 3) 工具抓取：按用户兴趣方向搜索，全部结果到手才替换
-        found, seen = [], set()
-        date_q = _date_days_ago(s["days_window"])
-        for kw in s["search_topics"][:8]:
-            kw = kw.strip()[:60]
-            if not kw or not RE_KW.match(kw.replace(" ", "+")):
-                continue
-            q = quote(kw.replace(" ", "+"), safe="+.-")
-            d = fetch(f"https://api.github.com/search/repositories?q={q}+created:%3E{date_q}&sort=stars&order=desc&per_page=8")
-            for it in d.get("items", []):
-                fn = it["full_name"]
-                if fn in seen:
-                    continue
-                seen.add(fn)
-                found.append((kw[:20], fn, it["html_url"], it.get("stargazers_count", 0),
-                              it.get("language") or "", (it.get("description") or "")[:300],
-                              it.get("pushed_at", "")))
-            time.sleep(0.6)
         if found:
             c.execute("DELETE FROM repos")
             c.executemany("""INSERT INTO repos(kind,full_name,url,stars,lang,desc,pushed_at,fetched_at)
@@ -245,8 +260,22 @@ class H(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
 
     def _origin_ok(self):
+        """CSRF 防护：默认同源校验（比对 Host），跨站 Origin 一律拒绝。
+        反代场景 Host 已被 nginx 透传为公网域名，同源判断依旧成立。"""
         o = self.headers.get("Origin", "")
-        return (not o) or (not ALLOWED_ORIGIN) or (o == ALLOWED_ORIGIN)
+        if not o:
+            return True  # curl/同源 GET 无 Origin，放行
+        host = self.headers.get("Host", "")
+        if not host:
+            return False
+        try:
+            from urllib.parse import urlparse
+            oh = urlparse(o).netloc
+        except Exception:
+            return False
+        if oh == host:
+            return True
+        return bool(ALLOWED_ORIGIN) and o == ALLOWED_ORIGIN  # 显式配置白名单兜底
 
     def _json(self, obj, code=200):
         b = json.dumps(obj, ensure_ascii=False).encode()
@@ -280,7 +309,10 @@ class H(BaseHTTPRequestHandler):
             self._json({"error": "not found"}, 404)
 
     def _body(self, cap=20000):
-        ln = int(self.headers.get("Content-Length", 0) or 0)
+        try:
+            ln = int(self.headers.get("Content-Length", 0) or 0)
+        except (ValueError, TypeError):
+            return None
         if ln > cap:
             return None
         try:
@@ -309,14 +341,32 @@ class H(BaseHTTPRequestHandler):
             c.close()
 
     def _handle_collect(self):
-        lock = "/tmp/intel-collect.lock"
+        # 锁文件放 700 私有目录（/tmp 全局可写，可被预置锁 DoS）
+        lock_dir = os.path.join(BASE_DIR, ".locks")
+        os.makedirs(lock_dir, mode=0o700, exist_ok=True)
         try:
-            fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            os.chmod(lock_dir, 0o700)
+        except Exception:
+            pass
+        lock = os.path.join(lock_dir, "collect.lock")
+        try:
+            fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
             os.write(fd, str(os.getpid()).encode())
             os.close(fd)
         except FileExistsError:
-            self._json({"ok": False, "msg": "采集正在进行中，请稍候"}, 429)
-            return
+            # 陈旧锁自愈：超 30 分钟视为残留，删除后允许重新触发
+            try:
+                if time.time() - os.path.getmtime(lock) > 1800:
+                    os.unlink(lock)
+                    fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+                    os.write(fd, str(os.getpid()).encode())
+                    os.close(fd)
+                else:
+                    self._json({"ok": False, "msg": "采集正在进行中，请稍候"}, 429)
+                    return
+            except FileExistsError:
+                self._json({"ok": False, "msg": "采集正在进行中，请稍候"}, 429)
+                return
         d = BASE_DIR
         subprocess.Popen(["bash", "-c",
             f"cd {d} && python3 server.py --collect; python3 cn_news.py; rm -f {lock}"],
@@ -333,6 +383,14 @@ class H(BaseHTTPRequestHandler):
         t = str(body.get("token") or "").strip()
         if not RE_TOKEN.match(t):
             self._json({"valid": 0, "msg": "Token 格式不对（应为 github_pat_/ghp_ 开头或 40 位字符串）"})
+            return
+        # 每 IP 简易限速：60s 窗口内最多 5 次校验（防 Token 爆破 oracle）
+        ip = self.client_address[0]
+        now_t = time.time()
+        _VT_HITS.setdefault(ip, []).append(now_t)
+        _VT_HITS[ip] = [x for x in _VT_HITS[ip] if now_t - x < 60]
+        if len(_VT_HITS[ip]) > 5:
+            self._json({"valid": 0, "msg": "校验太频繁，请 1 分钟后再试"})
             return
         time.sleep(0.4)  # 轻防爆破
         try:
@@ -351,14 +409,25 @@ class H(BaseHTTPRequestHandler):
             self._json({"ok": False, "msg": "bad request"}, 400)
             return
         t = str(body.get("token") or "").strip()
+        pin = str(body.get("pin") or self.headers.get("X-Intel-Pin") or "")
+        stored_hash = _raw_setting("pin_hash")
+        stored_salt = _raw_setting("pin_salt")
         if not t:
+            # 使用库存 Token：必须已设管理密码且校验通过（fail-closed）
             t = _raw_setting("github_token") or ""
             if not t:
                 self._json({"ok": False, "msg": "先在下方保存 Token，再导入名下仓库"}, 400)
                 return
-            pin = str(body.get("pin") or "")
-            stored_hash = _raw_setting("pin_hash")
-            if stored_hash and not _pin_hash_ok(pin, _raw_setting("pin_salt"), stored_hash):
+            if not stored_hash:
+                self._json({"ok": False, "msg": "请先在「管理密码」卡设置密码，再导入名下仓库"}, 403)
+                return
+            if not _pin_hash_ok(pin, stored_salt, stored_hash):
+                time.sleep(0.6)
+                self._json({"ok": False, "msg": "管理密码不对"}, 403)
+                return
+        elif stored_hash:
+            # 即使自带 token，只要设置了管理密码也要求校验（防旁路）
+            if not _pin_hash_ok(pin, stored_salt, stored_hash):
                 time.sleep(0.6)
                 self._json({"ok": False, "msg": "管理密码不对"}, 403)
                 return
@@ -394,7 +463,11 @@ class H(BaseHTTPRequestHandler):
         setting_pin = False
         if not stored_hash:
             # 初始化模式：pin 即首次设置的管理密码（允许为空=暂不设置）
+            # 仅限 setup_done 未置（首次部署）——防止恶意网页抢设 PIN 锁死配置
             if pin:
+                if body.get("setup_done"):
+                    self._json({"ok": False, "msg": "已初始化，请先在服务器本地设置管理密码"}, 403)
+                    return
                 if not (4 <= len(pin) <= 64):
                     self._json({"ok": False, "msg": "管理密码需 4-64 位"}, 400)
                     return

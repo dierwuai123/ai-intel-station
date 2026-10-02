@@ -641,7 +641,7 @@ function renderTools(tools){
     '<a class="tool'+(r._rec?' rec':'')+'" href="'+href(r.url)+'" target="_blank" rel="noopener noopener noreferrer">'+
     '<div class="r1"><span class="name">'+esc(r.full_name)+'</span><span class="kd '+esc(r.kind)+'">'+esc(r.kind)+'</span><span class="stars">★ '+fmt(r.stars)+'</span></div>'+
     '<div class="desc">'+esc(r.desc_zh||r.desc)+'</div>'+
-    '<div class="meta"><span>'+esc(r.lang||'—')+'</span><span>push '+(r.pushed_at||'').slice(0,10)+'</span>'+(r._rec?'<span class="rec-tag" style="margin-left:auto">✨推荐</span>':'')+'</div>'+
+    '<div class="meta"><span>'+esc(r.lang||'—')+'</span><span>push '+esc((r.pushed_at||'').slice(0,10))+'</span>'+(r._rec?'<span class="rec-tag" style="margin-left:auto">✨推荐</span>':'')+'</div>'+
     '</a>';
   document.getElementById('tools').innerHTML =
     (rec.length?'<div style="grid-column:1/-1;font-size:12px;font-weight:800;color:var(--acc)">✨ 匹配你的兴趣方向（'+rec.length+'）</div>'+rec.map(card).join(''):'')+
