@@ -20,6 +20,10 @@ Indie devs scatter work across repos and miss signals: a new fork, a hot PR, a c
 - **News** — Hacker News top stories + pluggable RSS feeds (defaults: IT之家 / Solidot / 少数派 / InfoQ)
 - **AI PR review** — pulls PR diffs, asks an LLM (Volc Ark / OpenAI-compatible) for verdict `merge|reject|needs-review` with prompt-injection hardening; fully optional
 - **Auto translation** — batch-translates English descriptions/titles to Chinese (optional)
+- **Onboarding wizard** — first-run 3-step setup: paste a zero-permission GitHub token (guided), pick search topics & tracked repos; skippable, editable anytime in Settings
+- **User preferences** — dark/light theme, interest topics, personalized recommendation scoring (bilingual keyword matching) for news & tools
+- **Repo import** — one-click import of your own GitHub repos via token (up to 20, checkbox picker)
+- **Admin PIN** — settings writes (token/repos/topics) protected by a salted-sha256 PIN; GET stays open for read-only dashboard
 - **PWA** — installable, pull-to-refresh triggers a collection run
 - **Zero dependencies** — Python stdlib only, single SQLite file, ~600 lines total
 
