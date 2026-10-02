@@ -249,7 +249,7 @@ main{position:relative}
         <div class="hint">owner/repo 格式，最多 20 个。保存后点右上「刷新数据」（← 时钟旁）立即抓取</div>
         <div class="chips" id="repoChips"></div>
         <div class="addrow">
-          <input class="inp" id="repoInp" placeholder="如：octocat/hello-world">
+          <input class="inp" id="repoInp" placeholder="如：dierwuai123/ai-intel-station">
           <button class="btn" id="repoAdd">添加</button>
         </div>
       </div>
@@ -296,7 +296,7 @@ main{position:relative}
       <h2>👋 欢迎用 AI 情报站</h2>
       <div class="lead">三步配置：追踪你的仓库 → 选兴趣方向 → （可选）加 Token。全部可跳过，之后在「设置」里随时改。</div>
       <label class="wlabel">追踪哪些 GitHub 仓库？（owner/repo，逗号或空格分隔）</label>
-      <input class="inp" id="wRepos" placeholder="如：octocat/hello-world torvalds/linux">
+      <input class="inp" id="wRepos" placeholder="如：dierwuai123/ai-intel-station torvalds/linux">
       <div class="guide">💡 填你自己维护的仓库，面板每天自动跟 stars/forks/release，<b>PR 也会被 AI 预审</b>。留空=先看公共数据。</div>
       <div class="wnav"><button class="btn" id="w1next">下一步</button></div>
     </div>
@@ -364,14 +364,17 @@ function applyTheme(mode){
 media.addEventListener('change', ()=>{ if(SETTINGS && SETTINGS.theme==='auto') applyTheme('auto'); });
 
 /* ---- Tab 切换 ---- */
+function showSection(key){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.t===key));
+  ['my','tools','news','set'].forEach(k=>{
+    document.getElementById('sec-'+k).hidden = (k!==key);
+  });
+}
 document.getElementById('tabs').addEventListener('click',e=>{
   const b=e.target.closest('.tab'); if(!b)return;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t===b));
-  ['my','tools','news','set'].forEach(k=>{
-    document.getElementById('sec-'+k).hidden = (k!==b.dataset.t);
-  });
+  showSection(b.dataset.t);
 });
-document.getElementById('setBtn').onclick=()=>{ document.querySelector('.tab[data-t=set]').click(); };
+document.getElementById('setBtn').onclick=()=>{ showSection('set'); };
 document.getElementById('themeBtn').onclick=()=>{
   const cur = (SETTINGS && SETTINGS.theme) || 'dark';
   const next = cur==='dark' ? 'light' : 'dark';
@@ -404,7 +407,7 @@ function saveSettings(patch, done){
    .catch(e=>toast('保存失败：'+e.message));
 }
 
-document.getElementById('bannerGo').onclick=()=>{ document.querySelector('.tab[data-t=set]').click(); };
+document.getElementById('bannerGo').onclick=()=>{ showSection('set'); };
 function renderBanner(){
   const b=document.getElementById('ghBanner');
   if(SETTINGS && !SETTINGS.token_set && SETTINGS.setup_done){ b.style.display='block'; }
