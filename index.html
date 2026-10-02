@@ -191,7 +191,6 @@ main{position:relative}
     <button class="tab on" data-t="my">📦 我的仓库 <span class="n" id="n-my">0</span></button>
     <button class="tab" data-t="tools">🛠 高分工具 <span class="n" id="n-tools">0</span></button>
     <button class="tab" data-t="news">📰 新闻 <span class="n" id="n-news-total">0</span></button>
-    <button class="tab" data-t="set">⚙️ 设置</button>
   </div>
 </div>
 
@@ -250,7 +249,7 @@ main{position:relative}
         <div class="hint">owner/repo 格式，最多 20 个。保存后点右上「刷新数据」（← 时钟旁）立即抓取</div>
         <div class="chips" id="repoChips"></div>
         <div class="addrow">
-          <input class="inp" id="repoInp" placeholder="如：dierwuai123/ai-intel-station">
+          <input class="inp" id="repoInp" placeholder="如：octocat/hello-world">
           <button class="btn" id="repoAdd">添加</button>
         </div>
       </div>
@@ -269,8 +268,8 @@ main{position:relative}
         </div>
       </div>
       <div class="setcard">
-        <h3>🔒 管理密码</h3>
-        <div class="hint">防止别人改你的设置。只存加盐哈希（sha256），明文不落库。未设置时任何人都可改设置。</div>
+              <h3>🔐 管理密码</h3>
+              <div class="hint">保护<b>设置类写操作</b>（存 Token / 增删仓库 / 改方向 / 导入）。设了密码后，改动需先输密码——防止别人拿到面板网址就能改你的配置。<b>看数据不受影响</b>，只锁"改"。不设 = 不启用保护。</div>
         <div class="row">
           <input class="inp" id="pinInp" type="password" placeholder="当前管理密码（未设置可留空）" autocomplete="off" style="max-width:280px">
           <input class="inp" id="pinNew" type="password" placeholder="新管理密码（4-64 位）" autocomplete="off" style="max-width:280px">
@@ -297,7 +296,7 @@ main{position:relative}
       <h2>👋 欢迎用 AI 情报站</h2>
       <div class="lead">三步配置：追踪你的仓库 → 选兴趣方向 → （可选）加 Token。全部可跳过，之后在「设置」里随时改。</div>
       <label class="wlabel">追踪哪些 GitHub 仓库？（owner/repo，逗号或空格分隔）</label>
-      <input class="inp" id="wRepos" placeholder="如：dierwuai123/ai-intel-station torvalds/linux">
+      <input class="inp" id="wRepos" placeholder="如：octocat/hello-world torvalds/linux">
       <div class="guide">💡 填你自己维护的仓库，面板每天自动跟 stars/forks/release，<b>PR 也会被 AI 预审</b>。留空=先看公共数据。</div>
       <div class="wnav"><button class="btn" id="w1next">下一步</button></div>
     </div>
