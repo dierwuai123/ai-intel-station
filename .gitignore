@@ -1,0 +1,10 @@
+# secrets / private config
+.volc_key
+*.db
+intel.db
+__pycache__/
+*.log
+.env
+# deployment-specific scripts
+add_bridge.sh
+*.pem

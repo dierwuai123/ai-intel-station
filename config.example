@@ -1,0 +1,14 @@
+# Optional config example / 可选配置示例
+# Copy to .env or export in shell / 复制为 .env 或直接 export
+# All have defaults; none required / 全部有默认值，均非必需
+
+INTEL_PORT=8097
+INTEL_MY_REPOS=torvalds/linux,python/cpython
+INTEL_DAYS_WINDOW=30
+INTEL_RSS_KEEP=25
+# INTEL_RSS_SOURCES=id|name|url|count,...   e.g. hacker|hacker News|https://hnrss.org/frontpage|15
+INTEL_ORIGIN=                               # your panel's public origin, e.g. https://example.com
+
+# LLM (optional): translation + PR review / 可选 LLM：翻译与 PR 审核
+VOLC_ARK_API_KEY=
+VOLC_ARK_EP_ID=
