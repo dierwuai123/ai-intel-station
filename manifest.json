@@ -1,6 +1,6 @@
 {
-  "name": "AI 情报站",
-  "short_name": "AI 情报站",
+  "name": "情报面板",
+  "short_name": "情报面板",
   "description": "GitHub 发布追踪 + 高分工具抓取 + 新闻聚合 + AI 审核 PR",
   "start_url": "./index.html",
   "display": "standalone",

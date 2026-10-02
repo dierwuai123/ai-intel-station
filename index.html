@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,29 +14,38 @@
   --acc:#5b8cff;--acc-dim:rgba(91,140,255,.14);
   --green:#5fd39a;--red:#e0707a;--amber:#e0a458;--gold:#f0c04a;
 }
+[data-theme="light"]{
+  --bg:#f4f6fa;--bg2:#ffffff;--card:#ffffff;--card-h:#f0f3f9;
+  --line:#dde3ee;--txt:#1a2130;--sub:#5a6478;--dim:#8b94a8;
+  --acc:#3565d9;--acc-dim:rgba(53,101,217,.10);
+  --green:#1d9e6b;--red:#c95058;--amber:#c07f2e;--gold:#b8860b;
+}
 html{-webkit-text-size-adjust:100%}
-body{font-family:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;display:flex;flex-direction:column}
+body{font-family:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;display:flex;flex-direction:column;transition:background .2s,color .2s}
 a{color:inherit;text-decoration:none}
 button{font-family:inherit}
+input{font-family:inherit}
 
 /* ===== 顶栏 ===== */
-.top{position:sticky;top:0;z-index:10;background:rgba(11,13,18,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb, var(--bg) 92%, transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
 .top-in{max-width:1180px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:14px}
 .logo{display:flex;align-items:center;gap:9px;font-size:17px;font-weight:800;letter-spacing:.5px;white-space:nowrap}
 .logo .dot{width:9px;height:9px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 4px var(--acc-dim)}
 .top .sp{flex:1}
-.updated{font-size:12px;color:var(--dim);white-space:nowrap}
+.iconbtn{background:var(--bg2);border:1px solid var(--line);color:var(--sub);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.iconbtn:hover{color:var(--txt);border-color:var(--acc)}
 .btn{background:var(--acc);color:#fff;border:0;border-radius:9px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;transition:transform .1s,opacity .15s;white-space:nowrap}
 .btn:active{transform:scale(.97)}
 .btn:disabled{opacity:.45;cursor:default}
+.btn.ghost{background:var(--bg2);color:var(--txt);border:1px solid var(--line)}
 
 /* ===== Tab 栏 ===== */
 .tabs{max-width:1180px;margin:0 auto;padding:14px 22px 0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tab{display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:11px;border:1px solid var(--line);background:var(--bg2);color:var(--sub);font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s}
-.tab:hover{color:var(--txt);border-color:#2e3648}
+.tab:hover{color:var(--txt);border-color:var(--acc)}
 .tab.on{background:var(--acc-dim);border-color:var(--acc);color:var(--acc)}
-.tab .n{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:rgba(255,255,255,.07);color:var(--sub);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.tab .n{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:rgba(128,140,165,.16);color:var(--txt);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
 .tab.on .n{background:var(--acc);color:#fff}
 
 /* ===== 主区 ===== */
@@ -48,22 +57,19 @@ section[hidden]{display:none}
 .srcfilter{display:flex;gap:6px;margin-left:auto}
 .sf{padding:6px 13px;border-radius:9px;border:1px solid var(--line);background:var(--bg2);color:var(--sub);font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s}
 .sf.on{background:var(--acc-dim);border-color:var(--acc);color:var(--acc)}
-.sf .n{opacity:.75;margin-left:3px;font-size:11px}
-.src-tag{font-style:normal;font-size:10.5px;color:var(--dim);background:rgba(255,255,255,.06);padding:1.5px 7px;border-radius:999px;margin-left:6px;vertical-align:1px}
-.sub-h{font-size:13px;font-weight:800;color:var(--sub);margin:0 0 12px;display:flex;align-items:center;gap:8px}
-.sub-h .hint{font-size:11.5px;font-weight:400;color:var(--dim)}
-.pull-tip{position:absolute;top:100%;left:0;right:0;text-align:center;font-size:12px;color:var(--dim);padding:10px 0;transition:opacity .2s;opacity:0;pointer-events:none}
-.pull-tip.show{opacity:1}
-main{position:relative}
+.sf .n{opacity:.8;margin-left:3px;font-size:11px}
+.rec-tag{font-style:normal;font-size:10px;font-weight:800;color:var(--acc);background:var(--acc-dim);padding:1.5px 7px;border-radius:999px;margin-left:6px;vertical-align:1px}
+.src-tag{font-style:normal;font-size:10.5px;color:var(--dim);background:rgba(128,140,165,.12);padding:1.5px 7px;border-radius:999px;margin-left:6px;vertical-align:1px}
 
-/* 我的仓库 */
+/* 仓库卡 */
 .mygrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
 .my{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;transition:border-color .15s,background .15s}
-.my:hover{border-color:#313a50;background:var(--card-h)}
+.my:hover{border-color:var(--acc);background:var(--card-h)}
 .my .fn{font-size:14.5px;font-weight:800;color:var(--acc);word-break:break-all}
 .my .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
 .my .s{text-align:center;background:var(--bg2);border-radius:10px;padding:9px 4px}
 .my .s .v{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
+.my .s .v.zero{color:var(--dim);font-weight:600}
 .my .s .k{font-size:10.5px;color:var(--dim);margin-top:2px}
 .my .rel{margin-top:12px;font-size:12px;color:var(--sub);display:flex;align-items:center;gap:6px}
 .my .rel b{color:var(--green);font-weight:700}
@@ -72,28 +78,21 @@ main{position:relative}
 /* 工具卡 */
 .toolgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
 .tool{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;transition:border-color .15s,background .15s}
-.tool:hover{border-color:#313a50;background:var(--card-h)}
+.tool:hover{border-color:var(--acc);background:var(--card-h)}
+.tool.rec{border-color:var(--acc)}
 .tool .r1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .tool .name{font-size:14px;font-weight:800;word-break:break-all}
 .tool .stars{margin-left:auto;color:var(--gold);font-weight:800;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .tool .desc{font-size:12.5px;color:var(--sub);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.tool .meta{display:flex;gap:12px;font-size:11px;color:var(--dim);margin-top:auto}
+.tool .meta{display:flex;gap:12px;font-size:11px;color:var(--dim);margin-top:auto;align-items:center}
 .kd{font-size:10px;font-weight:800;padding:2.5px 8px;border-radius:999px;letter-spacing:.4px}
 .kd.skill{background:rgba(95,211,154,.12);color:var(--green)}
 .kd.review{background:var(--acc-dim);color:var(--acc)}
 .kd.boilerplate{background:rgba(224,164,88,.12);color:var(--amber)}
-
-/* 新闻行 */
-.newslist{display:flex;flex-direction:column;gap:8px}
-.news{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 16px;transition:border-color .15s,background .15s}
-.news:hover{border-color:#313a50;background:var(--card-h)}
-.news .rank{width:26px;text-align:center;font-size:13px;font-weight:800;color:var(--dim);font-variant-numeric:tabular-nums;flex-shrink:0}
-.news .rank.hot{color:var(--amber)}
-.news .tt{flex:1;font-size:13.5px;font-weight:600;line-height:1.55}
-.news .sc{color:var(--amber);font-weight:800;font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kd.hot{background:rgba(240,192,74,.14);color:var(--gold)}
 
 /* PR 审核卡 */
-.prlist{display:flex;flex-direction:column;gap:10px}
+.prlist{display:flex;flex-direction:column;gap:10px;margin-top:16px}
 .pr{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
 .pr .r1{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .pr .no{font-size:13px;font-weight:800;color:var(--acc)}
@@ -105,16 +104,72 @@ main{position:relative}
 .pr .sum{font-size:12.5px;color:var(--sub);line-height:1.7;margin-top:9px}
 .pr .risk{font-size:12.5px;color:var(--amber);line-height:1.6;margin-top:6px}
 .pr .meta{display:flex;gap:12px;font-size:11px;color:var(--dim);margin-top:10px}
+.sub-h{font-size:13px;font-weight:800;color:var(--sub);margin:18px 0 12px;display:flex;align-items:center;gap:8px}
+.sub-h .hint{font-size:11.5px;font-weight:400;color:var(--dim)}
+.newslist{display:flex;flex-direction:column;gap:8px}
+.news{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 16px;transition:border-color .15s,background .15s}
+.news:hover{border-color:var(--acc);background:var(--card-h)}
+.news.rec{border-color:var(--acc)}
+.news .rank{width:26px;text-align:center;font-size:13px;font-weight:800;color:var(--dim);font-variant-numeric:tabular-nums;flex-shrink:0}
+.news .rank.hot{color:var(--amber)}
+.news .tt{flex:1;font-size:13.5px;font-weight:600;line-height:1.55}
+.news .sc{color:var(--amber);font-weight:800;font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* 设置 */
+.setgrid{display:flex;flex-direction:column;gap:16px;max-width:720px}
+.setcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.setcard h3{font-size:13.5px;font-weight:800;margin-bottom:4px}
+.setcard .hint{font-size:12px;color:var(--dim);line-height:1.7;margin-bottom:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:var(--bg2);color:var(--sub);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s}
+.chip.on{background:var(--acc-dim);border-color:var(--acc);color:var(--acc)}
+.chip .x{color:var(--dim);font-weight:800;cursor:pointer}
+.chip .x:hover{color:var(--red)}
+.addrow{display:flex;gap:8px;margin-top:10px}
+.inp{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:9px 13px;color:var(--txt);font-size:13px;outline:none;transition:border-color .15s}
+.inp:focus{border-color:var(--acc)}
+.inp::placeholder{color:var(--dim)}
+select.inp{flex:0 0 auto;width:auto;cursor:pointer}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tokrow{display:flex;gap:8px;align-items:center}
+.tokstate{font-size:12px;font-weight:700}
+.tokstate.ok{color:var(--green)}
+.tokstate.no{color:var(--dim)}
+.danger{color:var(--red)}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:var(--acc);color:#fff;padding:11px 22px;border-radius:12px;font-size:13px;font-weight:700;opacity:0;transition:all .25s;pointer-events:none;z-index:100;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* 向导 */
+.mask{position:fixed;inset:0;background:rgba(5,8,14,.72);backdrop-filter:blur(6px);z-index:50;display:flex;align-items:center;justify-content:center;padding:18px}
+.mask[hidden]{display:none}
+.wizard{background:var(--card);border:1px solid var(--line);border-radius:18px;max-width:560px;width:100%;padding:26px 28px;max-height:88vh;overflow-y:auto}
+.wizard .steps{display:flex;gap:6px;margin-bottom:18px}
+.wizard .steps i{flex:1;height:3px;border-radius:99px;background:var(--line)}
+.wizard .steps i.on{background:var(--acc)}
+.wizard h2{font-size:17px;font-weight:800;margin-bottom:6px}
+.wizard .lead{font-size:13px;color:var(--sub);line-height:1.8;margin-bottom:16px}
+.wizard .guide{background:var(--bg2);border:1px dashed var(--line);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--sub);line-height:1.9;margin-bottom:14px}
+.wizard .guide b{color:var(--txt)}
+.wizard .guide a{color:var(--acc);font-weight:700}
+.wlabel{display:block;font-size:12.5px;font-weight:700;margin:12px 0 6px}
+.wnav{display:flex;gap:10px;margin-top:18px}
+.wnav .btn{flex:1}
+.wskip{font-size:12px;color:var(--dim);text-align:center;margin-top:12px;cursor:pointer}
+.wskip:hover{color:var(--txt)}
+.werr{color:var(--red);font-size:12.5px;margin-top:8px;display:none}
 
 /* 状态 */
 .empty{color:var(--dim);font-size:13px;text-align:center;padding:44px 0;background:var(--bg2);border:1px dashed var(--line);border-radius:14px;line-height:1.8}
 .err{background:rgba(224,112,122,.1);border:1px solid rgba(224,112,122,.35);color:#e898a0;padding:12px 16px;border-radius:12px;font-size:13px;margin-bottom:16px;display:none}
+[data-theme="light"] .err{color:var(--red)}
 .skel{background:linear-gradient(90deg,var(--card) 25%,var(--card-h) 50%,var(--card) 75%);background-size:200% 100%;animation:sk 1.2s infinite;border-radius:14px;height:80px}
 @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.pull-tip{position:absolute;top:100%;left:0;right:0;text-align:center;font-size:12px;color:var(--dim);padding:10px 0;transition:opacity .2s;opacity:0;pointer-events:none}
+.pull-tip.show{opacity:1}
+main{position:relative}
 
 @media(max-width:640px){
   .top-in{padding:12px 16px;gap:10px}
-  .updated{display:none}
   .tabs{padding:12px 16px 0}
   main{padding:14px 16px 50px}
   .mygrid,.toolgrid{grid-template-columns:1fr}
@@ -129,11 +184,14 @@ main{position:relative}
     <div class="logo"><span class="dot"></span>AI 情报站</div>
     <div class="sp"></div>
     <span class="updated">更新 <span id="updated">—</span></span>
+    <button class="iconbtn" id="themeBtn" title="切换主题">🌓</button>
+    <button class="iconbtn" id="setBtn">设置</button>
   </div>
   <div class="tabs" id="tabs">
     <button class="tab on" data-t="my">📦 我的仓库 <span class="n" id="n-my">0</span></button>
     <button class="tab" data-t="tools">🛠 高分工具 <span class="n" id="n-tools">0</span></button>
-    <button class="tab" data-t="news">📰 新闻 <span class="n" id="n-src-cn">0</span></button>
+    <button class="tab" data-t="news">📰 新闻 <span class="n" id="n-news-total">0</span></button>
+    <button class="tab" data-t="set">⚙️ 设置</button>
   </div>
 </div>
 
@@ -141,125 +199,456 @@ main{position:relative}
   <div class="err" id="err"></div>
 
   <section id="sec-my">
-    <div class="sec-head"><h2>我的发布仓库</h2><span class="hint">GitHub 数据每日 6:10 自动更新</span></div>
+    <div class="sec-head"><h2>我的仓库</h2><span class="hint">GitHub 数据每日自动更新 · 在「设置」里增删追踪仓库</span></div>
+    <div id="ghBanner" style="display:none;background:var(--acc-dim);border:1px solid var(--acc);border-radius:12px;padding:13px 16px;font-size:13px;margin-bottom:16px;line-height:1.7">
+      ⚠️ <b>GitHub 账号尚未配置</b> —— 当前以匿名限额运行（60 次/时，数据易缺失）。去「设置 → GitHub Token」粘贴一个只读 Token（1 分钟），即可提升到 5000 次/时并导入名下仓库。<button class="btn" id="bannerGo" style="margin-left:8px;padding:5px 12px">去配置</button>
+    </div>
     <div class="mygrid" id="my"></div>
   </section>
 
   <section id="sec-tools" hidden>
-    <div class="sec-head"><h2>高分工具 / 套件</h2><span class="hint">近期高分 · skill / review / boilerplate</span></div>
+    <div class="sec-head"><h2>高分工具</h2><span class="hint">按你的兴趣方向抓取 · <span class="rec-tag">推荐</span>=匹配你的方向</span></div>
     <div class="toolgrid" id="tools"></div>
   </section>
 
   <section id="sec-news" hidden>
     <div class="sec-head"><h2>新闻头条</h2>
       <div class="srcfilter" id="srcfilter">
-        <button class="sf on" data-s="cn">🇨🇳 中文 <span class="n" id="n-src-cn">0</span></button>
+        <button class="sf on" data-s="rec">✨ 推荐 <span class="n" id="n-rec">0</span></button>
+        <button class="sf" data-s="cn">🇨🇳 中文 <span class="n" id="n-src-cn">0</span></button>
         <button class="sf" data-s="hn">HN <span class="n" id="n-src-hn">0</span></button>
       </div>
     </div>
     <div class="newslist" id="news"></div>
   </section>
 
-  <section id="sec-pr" hidden></section>
+  <section id="sec-set" hidden>
+    <div class="sec-head"><h2>设置</h2><span class="hint">偏好保存在本站数据库 · 主题立即生效</span></div>
+    <div class="setgrid">
+      <div class="setcard">
+        <h3>🌓 主题</h3>
+        <div class="hint">深色/浅色/跟随系统，保存后立即生效</div>
+        <div class="row">
+          <select class="inp" id="setTheme">
+            <option value="dark">深色</option>
+            <option value="light">浅色</option>
+            <option value="auto">跟随系统</option>
+          </select>
+        </div>
+      </div>
+      <div class="setcard">
+        <h3>🔍 兴趣方向（推荐依据）</h3>
+        <div class="hint">最多 8 个，命中方向的内容会带 <span class="rec-tag">推荐</span> 标记并优先排序。示例：ai agent、code review、fastapi</div>
+        <div class="chips" id="topicChips"></div>
+        <div class="addrow">
+          <input class="inp" id="topicInp" placeholder="加一个方向，如：rag / mcp / quant">
+          <button class="btn" id="topicAdd">添加</button>
+        </div>
+      </div>
+      <div class="setcard">
+        <h3>📦 追踪仓库</h3>
+        <div class="hint">owner/repo 格式，最多 20 个。保存后点右上「刷新数据」（← 时钟旁）立即抓取</div>
+        <div class="chips" id="repoChips"></div>
+        <div class="addrow">
+          <input class="inp" id="repoInp" placeholder="如：dierwuai123/ai-intel-station">
+          <button class="btn" id="repoAdd">添加</button>
+        </div>
+      </div>
+      <div class="setcard">
+        <h3>🔑 GitHub Token</h3>
+        <div class="hint">提升 API 限额（匿名 60 次/时 → 认证 5000 次/时）+ 一键导入名下仓库。<br>怎么拿：github.com/settings/personal-access-tokens/new → fine-grained → <b>权限全不勾</b>（只读公开数据零权限就够）→ 90 天 → 复制。<br><span class="danger">🔒 Token 只存本站数据库，永不下发到页面</span>；不需要 SSH key（SSH 只用于 git push，读数据用不上）。</div>
+        <div class="tokrow">
+          <input class="inp" id="tokInp" type="password" placeholder="粘贴 Token（github_pat_… 或 ghp_…）" autocomplete="off">
+          <button class="btn ghost" id="tokVerify">校验</button>
+          <button class="btn" id="tokSave">保存</button>
+        </div>
+        <div class="tokstate no" id="tokState" style="margin-top:8px">未设置</div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn ghost" id="impBtn">📥 导入名下仓库</button>
+          <span class="hint" id="impHint">已保存 Token 可直接导入；最多勾 20 个</span>
+        </div>
+      </div>
+      <div class="setcard">
+        <h3>🔒 管理密码</h3>
+        <div class="hint">防止别人改你的设置。只存加盐哈希（sha256），明文不落库。未设置时任何人都可改设置。</div>
+        <div class="row">
+          <input class="inp" id="pinInp" type="password" placeholder="当前管理密码（未设置可留空）" autocomplete="off" style="max-width:280px">
+          <input class="inp" id="pinNew" type="password" placeholder="新管理密码（4-64 位）" autocomplete="off" style="max-width:280px">
+          <button class="btn" id="pinSave">设置</button>
+        </div>
+      </div>
+      <div class="setcard">
+        <h3>⏱ 抓取窗口</h3>
+        <div class="hint">高分工具只抓最近 N 天新建的仓库（1-90 天）</div>
+        <div class="row">
+          <input class="inp" id="daysInp" type="number" min="1" max="90" value="30" style="max-width:120px"> <span style="font-size:12.5px;color:var(--dim)">天</span>
+          <button class="btn" id="daysSave">保存</button>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
+
+<!-- 首次配置向导 -->
+<div class="mask" id="mask" hidden>
+  <div class="wizard" id="wizard">
+    <div class="steps"><i class="on" id="st1"></i><i id="st2"></i><i id="st3"></i></div>
+    <div id="w1">
+      <h2>👋 欢迎用 AI 情报站</h2>
+      <div class="lead">三步配置：追踪你的仓库 → 选兴趣方向 → （可选）加 Token。全部可跳过，之后在「设置」里随时改。</div>
+      <label class="wlabel">追踪哪些 GitHub 仓库？（owner/repo，逗号或空格分隔）</label>
+      <input class="inp" id="wRepos" placeholder="如：dierwuai123/ai-intel-station torvalds/linux">
+      <div class="guide">💡 填你自己维护的仓库，面板每天自动跟 stars/forks/release，<b>PR 也会被 AI 预审</b>。留空=先看公共数据。</div>
+      <div class="wnav"><button class="btn" id="w1next">下一步</button></div>
+    </div>
+    <div id="w2" hidden>
+      <h2>🔍 你关注哪些方向？</h2>
+      <div class="lead">点选或自己输入关键词，工具和新闻会按命中打<b>「推荐」</b>标并排前面。</div>
+      <div class="chips" id="wChips"></div>
+      <div class="addrow">
+        <input class="inp" id="wTopic" placeholder="自定义方向，如：rag">
+        <button class="btn ghost" id="wTopicAdd">添加</button>
+      </div>
+      <div class="wnav"><button class="btn ghost" id="w2back">上一步</button><button class="btn" id="w2next">下一步</button></div>
+    </div>
+    <div id="w3" hidden>
+      <h2>🔑 GitHub Token（可选）</h2>
+      <div class="lead">加了限额从 60 次/时升到 5000 次/时；不加也能用，只是抓取慢一点。</div>
+      <div class="guide">
+        <b>怎么拿（1 分钟）：</b><br>
+        1. 打开 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a>（需登录 GitHub）<br>
+        2. Token name 随便填（如 intel-station），Expiration 选 90 天<br>
+        3. <b>权限什么都不用勾</b>——只读公开数据，零权限就够<br>
+        4. Generate token → 复制 <b>github_pat_</b> 开头的一长串<br>
+        5. 粘到下面，点「校验并保存」<br>
+        💡 <b>不需要 SSH key</b>：SSH 只用于 git push，读数据用不上。
+      </div>
+      <input class="inp" id="wToken" type="password" placeholder="github_pat_…（留空=跳过）" autocomplete="off">
+      <div class="werr" id="wErr"></div>
+      <div class="wnav"><button class="btn ghost" id="w3back">上一步</button><button class="btn" id="w3done">完成</button></div>
+      <div class="wskip" id="wSkip">跳过，直接开始用（稍后可在「设置」里补 Token 和仓库）→</div>
+    </div>
+  </div>
+</div>
+
+<!-- 导入仓库弹窗 -->
+<div class="mask" id="impMask" hidden>
+  <div class="wizard">
+    <h2>📥 导入名下仓库</h2>
+    <div class="lead" id="impLogin">拉取中…</div>
+    <input class="inp" id="impSearch" placeholder="筛选：输入仓库名关键字" style="margin-bottom:10px">
+    <div id="impList" style="max-height:46vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px"></div>
+    <div class="wnav">
+      <button class="btn ghost" id="impCancel">取消</button>
+      <button class="btn" id="impDone">导入所选（<span id="impCnt">0</span>）</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 "use strict";
 function esc(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function fmt(n){return (n==null?'—':Number(n).toLocaleString())}
+function href(u){ return /^https?:\/\//i.test(u||'') ? esc(u) : 'javascript:void(0)'; }
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+
+/* ---- 主题 ---- */
+const media = window.matchMedia('(prefers-color-scheme: dark)');
+function applyTheme(mode){
+  const eff = mode==='auto' ? (media.matches?'dark':'light') : mode;
+  document.documentElement.dataset.theme = eff;
+  const meta = document.querySelector('meta[name=theme-color]');
+  if(meta) meta.content = eff==='dark' ? '#0b0d12' : '#f4f6fa';
+}
+media.addEventListener('change', ()=>{ if(SETTINGS && SETTINGS.theme==='auto') applyTheme('auto'); });
 
 /* ---- Tab 切换 ---- */
 document.getElementById('tabs').addEventListener('click',e=>{
   const b=e.target.closest('.tab'); if(!b)return;
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t===b));
-  ['my','tools','news'].forEach(k=>{
+  ['my','tools','news','set'].forEach(k=>{
     document.getElementById('sec-'+k).hidden = (k!==b.dataset.t);
   });
 });
-/* ---- 新闻源筛选 ---- */
-document.getElementById('srcfilter').addEventListener('click',e=>{
-  const b=e.target.closest('.sf'); if(!b)return;
-  document.querySelectorAll('.sf').forEach(t=>t.classList.toggle('on',t===b));
-  NEWS_SRC = b.dataset.s;
-  if(DATA) renderNews(DATA.news);
+document.getElementById('setBtn').onclick=()=>{ document.querySelector('.tab[data-t=set]').click(); };
+document.getElementById('themeBtn').onclick=()=>{
+  const cur = (SETTINGS && SETTINGS.theme) || 'dark';
+  const next = cur==='dark' ? 'light' : 'dark';
+  saveSettings({theme:next}, ()=>{ toast(next==='dark'?'已切深色':'已切浅色'); });
+};
+
+/* ---- 状态 ---- */
+let NEWS_MODE='rec';
+let DATA=null, SETTINGS=null;
+let pendSettings={topics:null,repos:null};
+
+async function api(path, opts){
+  const r = await fetch(path, opts);
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(d.msg || d.error || ('HTTP '+r.status));
+  return d;
+}
+
+async function loadSettings(){
+  SETTINGS = await api('api/settings');
+  applyTheme(SETTINGS.theme);
+  renderSetPanel();
+  renderBanner();
+  if(!SETTINGS.setup_done){ openWizard(); }
+}
+function saveSettings(patch, done){
+  const pin = document.getElementById('pinInp').value.trim();
+  api('api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...patch,pin})})
+   .then(()=>{ loadSettings(); if(done)done(); })
+   .catch(e=>toast('保存失败：'+e.message));
+}
+
+document.getElementById('bannerGo').onclick=()=>{ document.querySelector('.tab[data-t=set]').click(); };
+function renderBanner(){
+  const b=document.getElementById('ghBanner');
+  if(SETTINGS && !SETTINGS.token_set && SETTINGS.setup_done){ b.style.display='block'; }
+  else b.style.display='none';
+}
+
+/* ---- 设置面板 ---- */
+function chipHtml(list, cls){
+  return list.map(x=>`<span class="chip ${cls}">${esc(x)} <span class="x" data-v="${esc(x)}">×</span></span>`).join('') || '<span style="font-size:12px;color:var(--dim)">（空）</span>';
+}
+function renderSetPanel(){
+  if(!SETTINGS) return;
+  document.getElementById('setTheme').value = SETTINGS.theme;
+  document.getElementById('topicChips').innerHTML = chipHtml(SETTINGS.search_topics,'topic');
+  document.getElementById('repoChips').innerHTML = chipHtml(SETTINGS.my_repos,'repo');
+  document.getElementById('daysInp').value = SETTINGS.days_window;
+  const ts = document.getElementById('tokState');
+  ts.textContent = SETTINGS.token_set ? '✅ 已设置（保存于本站数据库）' : '未设置（匿名限额运行中）';
+  ts.className = 'tokstate ' + (SETTINGS.token_set?'ok':'no');
+  const ib = document.getElementById('impBtn'), ih = document.getElementById('impHint');
+  if(SETTINGS.token_set){ ib.disabled=false; ih.textContent='已保存 Token，点选即可导入（最多 20 个）'; }
+  else { ib.disabled=true; ih.textContent='请先在上方粘贴并保存 Token'; }
+  const pb = document.getElementById('pinSave');
+  if(pb) pb.textContent = SETTINGS.pin_set ? '更新密码' : '设置密码';
+}
+document.getElementById('topicChips').addEventListener('click',e=>{
+  const x=e.target.closest('.x'); if(!x)return;
+  saveSettings({search_topics: SETTINGS.search_topics.filter(t=>t!==x.dataset.v)});
 });
+document.getElementById('repoChips').addEventListener('click',e=>{
+  const x=e.target.closest('.x'); if(!x)return;
+  saveSettings({my_repos: SETTINGS.my_repos.filter(t=>t!==x.dataset.v)});
+});
+document.getElementById('topicAdd').onclick=()=>{
+  const v=document.getElementById('topicInp').value.trim(); if(!v)return;
+  if(SETTINGS.search_topics.length>=8) return toast('最多 8 个方向');
+  saveSettings({search_topics:[...SETTINGS.search_topics,v]},()=>{document.getElementById('topicInp').value='';toast('已添加');});
+};
+document.getElementById('repoAdd').onclick=()=>{
+  const v=document.getElementById('repoInp').value.trim(); if(!v)return;
+  if(!/^[\w.-]+\/[\w.-]+$/.test(v)) return toast('格式应为 owner/repo');
+  if(SETTINGS.my_repos.length>=20) return toast('最多 20 个仓库');
+  saveSettings({my_repos:[...SETTINGS.my_repos,v]},()=>{document.getElementById('repoInp').value='';toast('已添加，点「刷新数据」立即抓取');});
+};
+document.getElementById('setTheme').onchange=e=>{ saveSettings({theme:e.target.value},()=>toast('主题已保存')); };
+document.getElementById('daysSave').onclick=()=>{
+  const v=parseInt(document.getElementById('daysInp').value,10);
+  if(!(v>=1&&v<=90)) return toast('需 1-90 天');
+  saveSettings({days_window:v},()=>toast('已保存'));
+};
+document.getElementById('pinSave').onclick=()=>{
+  const cur=document.getElementById('pinInp').value.trim(), np=document.getElementById('pinNew').value.trim();
+  if(!np) return toast('先填新管理密码');
+  if(np.length<4) return toast('至少 4 位');
+  const patch = SETTINGS.pin_set ? {pin:cur,new_pin:np} : {pin:np};
+  api('api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(patch)})
+   .then(()=>{document.getElementById('pinInp').value='';document.getElementById('pinNew').value='';toast('管理密码已设置');loadSettings();})
+   .catch(e=>toast(e.message));
+};
+document.getElementById('tokVerify').onclick=async()=>{
+  const t=document.getElementById('tokInp').value.trim();
+  const st=document.getElementById('tokState');
+  if(!t) { st.textContent='先粘贴 Token'; st.className='tokstate no'; return; }
+  st.textContent='校验中…'; st.className='tokstate no';
+  try{
+    const d=await api('api/verify-token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:t})});
+    if(d.valid){ st.textContent='✅ 校验通过：@'+d.login; st.className='tokstate ok'; }
+    else { st.textContent='❌ '+(d.msg||'无效'); st.className='tokstate no'; }
+  }catch(e){ st.textContent='校验失败：'+e.message; st.className='tokstate no'; }
+};
+document.getElementById('tokSave').onclick=()=>{
+  const t=document.getElementById('tokInp').value.trim();
+  saveSettings({github_token:t},()=>{document.getElementById('tokInp').value='';toast(t?'Token 已保存':'Token 已移除');});
+};
+
+/* ---- 导入名下仓库 ---- */
+let IMP_ALL=[], IMP_SEL=new Set();
+document.getElementById('impBtn').onclick=async()=>{
+  document.getElementById('impMask').hidden=false;
+  document.getElementById('impLogin').textContent='拉取中…';
+  document.getElementById('impList').innerHTML='<div class="empty">加载中…</div>';
+  const pin=document.getElementById('pinInp').value.trim();
+  try{
+    const d=await api('api/list-repos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin})});
+    IMP_ALL=d.repos; IMP_SEL=new Set();
+    document.getElementById('impLogin').textContent='@'+(d.login||'?')+' 名下共 '+IMP_ALL.length+' 个仓库，点选要追踪的（含私有仓库也不会外泄，仅本站展示数字）：';
+    impRender();
+  }catch(e){
+    document.getElementById('impLogin').textContent='拉取失败';
+    document.getElementById('impList').innerHTML='<div class="empty">'+esc(e.message)+'<br>若 Token 是 fine-grained 且未勾仓库权限，导入名下仓库需要 Account permissions → Repositories: Read</div>';
+  }
+};
+function impRender(){
+  const kw=(document.getElementById('impSearch').value||'').toLowerCase();
+  const list=IMP_ALL.filter(r=>!kw||r.full_name.toLowerCase().includes(kw));
+  document.getElementById('impList').innerHTML=list.map(r=>
+    '<span class="chip '+(IMP_SEL.has(r.full_name)?'on':'')+'" data-imp="'+esc(r.full_name)+'">'+esc(r.full_name)+' <span style="color:var(--gold)">★'+r.stars+'</span>'+(r.private?' <span class="src-tag">私有</span>':'')+'</span>').join('') || '<div class="empty">无匹配仓库</div>';
+  document.getElementById('impCnt').textContent=IMP_SEL.size;
+}
+document.getElementById('impList').addEventListener('click',e=>{
+  const c=e.target.closest('[data-imp]'); if(!c)return;
+  const v=c.dataset.imp;
+  if(IMP_SEL.has(v)) IMP_SEL.delete(v);
+  else { if(IMP_SEL.size>=20) return toast('最多 20 个'); IMP_SEL.add(v); }
+  impRender();
+});
+document.getElementById('impSearch').oninput=impRender;
+document.getElementById('impCancel').onclick=()=>{ document.getElementById('impMask').hidden=true; };
+document.getElementById('impDone').onclick=()=>{
+  if(!IMP_SEL.size) return toast('先点选仓库');
+  const merged=[...new Set([...SETTINGS.my_repos,...IMP_SEL])].slice(0,20);
+  saveSettings({my_repos:merged},()=>{
+    document.getElementById('impMask').hidden=true;
+    toast('已导入 '+IMP_SEL.size+' 个，点「刷新数据」立即抓取');
+  });
+};
+
+/* ---- 向导 ---- */
+const W_PRESETS=['ai agent','code review','rag','mcp','quant','前端','量化','独立开发','saas boilerplate','数据库'];
+let wTopics=new Set(['ai agent','code review']);
+function wRenderChips(){
+  document.getElementById('wChips').innerHTML =
+    W_PRESETS.map(t=>`<span class="chip ${wTopics.has(t)?'on':''}" data-t="${esc(t)}">${esc(t)}</span>`).join('') +
+    [...wTopics].filter(t=>!W_PRESETS.includes(t)).map(t=>`<span class="chip on" data-t="${esc(t)}">${esc(t)} <span class="x" data-rm="${esc(t)}">×</span></span>`).join('');
+}
+document.getElementById('wChips').addEventListener('click',e=>{
+  const c=e.target.closest('.chip'); if(!c)return;
+  const rm=e.target.dataset.rm;
+  if(rm){ wTopics.delete(rm); } else { const t=c.dataset.t; wTopics.has(t)?wTopics.delete(t):wTopics.add(t); }
+  wRenderChips();
+});
+document.getElementById('wTopicAdd').onclick=()=>{
+  const v=document.getElementById('wTopic').value.trim(); if(!v)return;
+  if(wTopics.size>=8) return toast('最多 8 个');
+  wTopics.add(v); document.getElementById('wTopic').value=''; wRenderChips();
+};
+function wStep(n){
+  [1,2,3].forEach(i=>{
+    document.getElementById('w'+i).hidden = i!==n;
+    document.getElementById('st'+i).classList.toggle('on', i<=n);
+  });
+}
+function openWizard(){ document.getElementById('mask').hidden=false; wStep(1); wRenderChips(); }
+document.getElementById('w1next').onclick=()=>wStep(2);
+document.getElementById('w2back').onclick=()=>wStep(1);
+document.getElementById('w2next').onclick=()=>wStep(3);
+document.getElementById('w3back').onclick=()=>wStep(2);
+document.getElementById('w3done').onclick=async()=>{
+  const err=document.getElementById('wErr'); err.style.display='none';
+  const repos=[...new Set(document.getElementById('wRepos').value.trim().split(/[\s,，]+/).filter(Boolean))];
+  for(const r of repos){ if(!/^[\w.-]+\/[\w.-]+$/.test(r)){ err.textContent='仓库格式应为 owner/repo：'+r; err.style.display='block'; return; } }
+  const token=document.getElementById('wToken').value.trim();
+  const patch={search_topics:[...wTopics].slice(0,8), my_repos:repos.slice(0,20), setup_done:true};
+  if(token) patch.github_token=token;
+  try{
+    await api('api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(patch)});
+    document.getElementById('mask').hidden=true;
+    toast('配置完成！正在按你的方向抓取…');
+    triggerCollect();
+    load();
+  }catch(e){ err.textContent=e.message; err.style.display='block'; }
+};
+document.getElementById('wSkip').onclick=async()=>{
+  try{ await api('api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({setup_done:true})}); }catch(e){}
+  document.getElementById('mask').hidden=true; load();
+};
 
 /* ---- 渲染 ---- */
-let NEWS_SRC = 'cn';
-let DATA = null;
-// href 白名单：仅 http(s) 输出，其余降级为 javascript:void(0)（不可执行恶意协议）
-function href(u){ return /^https?:\/\//i.test(u||'') ? esc(u) : 'javascript:void(0)'; }
 function render(d){
-  DATA = d;
+  DATA=d;
   const my=d.myrepos||[], tools=d.repos||[], news=d.news||[], prs=d.pr_reviews||[];
   document.getElementById('n-my').textContent=my.length;
   document.getElementById('n-tools').textContent=tools.length;
-  const cnN = news.filter(n=>n.src!=='hn').length;
-  const hnN = news.filter(n=>n.src==='hn').length;
+  const cnN=news.filter(n=>n.src!=='hn').length, hnN=news.filter(n=>n.src==='hn').length;
   document.getElementById('n-src-cn').textContent=cnN;
   document.getElementById('n-src-hn').textContent=hnN;
+  document.getElementById('n-rec').textContent=news.filter(n=>n._rec).length;
+  document.getElementById('n-news-total').textContent=news.length;
   document.getElementById('updated').textContent=(d.updated&&d.updated[0]&&d.updated[0].t)||'—';
-  renderNews(news);
-  renderMy(my);
-  renderTools(tools);
+  renderNews(news); renderMy(my); renderTools(tools);
 }
 function renderNews(news){
-  const list = NEWS_SRC==='hn' ? news.filter(n=>n.src==='hn') : news.filter(n=>n.src!=='hn');
+  let list;
+  if(NEWS_MODE==='rec') list=news.filter(n=>n._rec);
+  else if(NEWS_MODE==='hn') list=news.filter(n=>n.src==='hn');
+  else list=news.filter(n=>n.src!=='hn');
   const SRC_NAME={ithome:'IT之家',solidot:'Solidot',sspai:'少数派',infoq:'InfoQ',hn:'HN'};
-  const rankCls = NEWS_SRC==='hn' ? (i)=>(i<3?' hot':'') : ()=>'';
-
+  const rankCls = NEWS_MODE==='hn' ? (i)=>(i<3?' hot':'') : ()=>'';
   document.getElementById('news').innerHTML = list.map((n,i)=>
-    '<a class="news" href="'+href(n.url)+'" target="_blank" rel="noopener noopener noreferrer">'+
+    '<a class="news'+(n._rec?' rec':'')+'" href="'+href(n.url)+'" target="_blank" rel="noopener noopener noreferrer">'+
     '<span class="rank'+rankCls(i)+'">'+(i+1)+'</span>'+
-    '<span class="tt">'+esc(n.title_zh||n.title)+(n.src!=='hn'?' <em class="src-tag">'+(SRC_NAME[n.src]||n.src)+'</em>':'')+'</span>'+
+    '<span class="tt">'+esc(n.title_zh||n.title)+(n._rec?' <em class="rec-tag">✨推荐</em>':'')+(n.src!=='hn'?' <em class="src-tag">'+(SRC_NAME[n.src]||n.src)+'</em>':'')+'</span>'+
     (n.src==='hn'?'<span class="sc">▲ '+fmt(n.score)+'</span>':'')+
     '</a>').join('') ||
-    '<div class="empty">暂无数据，每日 6:10 自动抓取</div>';
+    (NEWS_MODE==='rec' ? '<div class="empty">暂无命中推荐方向的新闻<br>在「设置 → 兴趣方向」加几个关键词，或在上方切到 全部 中文/HN</div>'
+                       : '<div class="empty">暂无数据，每日自动抓取</div>');
 }
-
 function renderMy(my){
   const prs=(DATA&&DATA.pr_reviews)||[];
   const VC={merge:'#5fd39a',reject:'#e0707a','needs-review':'#e0a458'};
   const VL={merge:'可合并',reject:'建议拒绝','needs-review':'需人工复核'};
-  const prHtml = prs.length ? '<h3 class="sub-h">🤖 AI 审核 PR <span class="hint">每日 6:20 自动扫描</span></h3>' +
+  const prHtml = prs.length ? '<h3 class="sub-h">🤖 AI 审核 PR <span class="hint">每日自动扫描</span></h3>' +
     '<div class="prlist">'+prs.map(p=>
     '<div class="pr">'+
     '<div class="r1"><span class="no">#'+esc(p.pr)+'</span><span class="title">'+esc(p.title)+'</span>'+
     '<span class="verdict '+esc(p.verdict)+'" style="color:'+(VC[p.verdict]||'#9aa3b8')+'">'+(VL[p.verdict]||esc(p.verdict))+' '+Math.round((p.confidence||0)*100)+'%</span></div>'+
     '<div class="sum">'+esc(p.summary)+'</div>'+
     (p.risks?'<div class="risk">⚠ '+esc(p.risks)+'</div>':'')+
-    '<div class="meta"><span>'+esc(p.repo)+'</span><span>by '+esc(p.author)+'</span><span>'+esc(p.created_at)+'</span></div>'+
+    '<div class="meta"><span>'+esc(p.repo)+'</span><span>by '+esc(p.author)+'</span></div>'+
     '</div>').join('')+'</div>' : '';
-
   document.getElementById('my').innerHTML =
     '<h3 class="sub-h">📦 仓库数据</h3><div class="mygrid">' +
     (my.map(r=>
     '<div class="my">'+
-    '<a class="fn" href="'+href('https://github.com/'+r.full_name)+'" target="_blank" rel="noopener noopener noreferrer">'+esc(r.full_name)+'</a>'+
+    '<a class="fn" href="'+href('https://github.com/'+r.full_name)+'" target="_blank" rel="noopener noopener noreferrer">'+esc(r.full_name)+' ↗</a>'+
     '<div class="stats">'+
-    ['stars|'+r.stars,'forks|'+r.forks,'watch|'+r.watchers,'issues|'+r.open_issues].map(x=>{
-      const p=x.split('|');
-      return '<div class="s"><div class="v">'+fmt(p[1])+'</div><div class="k">'+p[0]+'</div></div>';
+    [['stars',r.stars],['forks',r.forks],['watching',r.watchers],['issues',r.open_issues]].map(x=>{
+      const zero = !x[1];
+      return '<div class="s"><div class="v'+(zero?' zero':'')+'">'+(zero?'—':fmt(x[1]))+'</div><div class="k">'+x[0]+'</div></div>';
     }).join('')+
     '</div>'+
     (r.release?'<div class="rel">🏷️ 最新发布 <b>'+esc(r.release)+'</b></div>':'')+
     '<div class="push">最近推送 '+esc((r.pushed_at||'').slice(0,10))+'</div>'+
     '</div>').join('') ||
-    '<div class="empty" style="grid-column:1/-1">暂无数据，每日 6:10 自动抓取</div>') +
+    '<div class="empty" style="grid-column:1/-1">还没有追踪仓库<br>去「设置 → 追踪仓库」加一个，或点右上「设置」</div>') +
     '</div>' + prHtml;
 }
 function renderTools(tools){
-  document.getElementById('tools').innerHTML = tools.map(r=>
-    '<a class="tool" href="'+href(r.url)+'" target="_blank" rel="noopener noopener noreferrer">'+
+  const rec=tools.filter(t=>t._rec), rest=tools.filter(t=>!t._rec);
+  const card = r=>
+    '<a class="tool'+(r._rec?' rec':'')+'" href="'+href(r.url)+'" target="_blank" rel="noopener noopener noreferrer">'+
     '<div class="r1"><span class="name">'+esc(r.full_name)+'</span><span class="kd '+esc(r.kind)+'">'+esc(r.kind)+'</span><span class="stars">★ '+fmt(r.stars)+'</span></div>'+
     '<div class="desc">'+esc(r.desc_zh||r.desc)+'</div>'+
-    '<div class="meta"><span>'+esc(r.lang||'—')+'</span><span>push '+(r.pushed_at||'').slice(0,10)+'</span></div>'+
-    '</a>').join('') ||
+    '<div class="meta"><span>'+esc(r.lang||'—')+'</span><span>push '+(r.pushed_at||'').slice(0,10)+'</span>'+(r._rec?'<span class="rec-tag" style="margin-left:auto">✨推荐</span>':'')+'</div>'+
+    '</a>';
+  document.getElementById('tools').innerHTML =
+    (rec.length?'<div style="grid-column:1/-1;font-size:12px;font-weight:800;color:var(--acc)">✨ 匹配你的兴趣方向（'+rec.length+'）</div>'+rec.map(card).join(''):'')+
+    (rest.length?'<div style="grid-column:1/-1;font-size:12px;font-weight:800;color:var(--dim);margin-top:6px">其他新工具</div>'+rest.map(card).join(''):'') ||
     '<div class="empty" style="grid-column:1/-1">暂无数据</div>';
 }
 
 function load(){
-  fetch('api/overview').then(r=>r.json()).then(d=>{
+  api('api/overview').then(d=>{
     document.getElementById('err').style.display='none';
     render(d);
   }).catch(e=>{
@@ -267,8 +656,19 @@ function load(){
     el.style.display='block'; el.textContent='加载失败：'+e;
   });
 }
+function triggerCollect(){
+  api('api/collect',{method:'POST'}).then(()=>toast('采集中，1-3 分钟后刷新可见')).catch(e=>toast(e.message));
+}
 
-/* ---- 下拉刷新：顶部下拉 >70px 触发采集 ---- */
+/* ---- 新闻源筛选 ---- */
+document.getElementById('srcfilter').addEventListener('click',e=>{
+  const b=e.target.closest('.sf'); if(!b)return;
+  document.querySelectorAll('.sf').forEach(t=>t.classList.toggle('on',t===b));
+  NEWS_MODE=b.dataset.s;
+  if(DATA) renderNews(DATA.news);
+});
+
+/* ---- 下拉刷新 ---- */
 const pullTip=document.createElement('div');
 pullTip.className='pull-tip';
 document.querySelector('main').appendChild(pullTip);
@@ -291,17 +691,15 @@ document.addEventListener('touchend',e=>{
   if(pullArmed&&!pulling&&dy>70){
     pulling=true;
     pullTip.textContent='采集中…'; pullTip.classList.add('show');
-    fetch('api/collect',{method:'POST'}).then(()=>setTimeout(()=>{pullTip.classList.remove('show');pulling=false;load();},2500))
-    .catch(()=>{pullTip.classList.remove('show');pulling=false;});
+    api('api/collect',{method:'POST'}).then(()=>setTimeout(()=>{pullTip.classList.remove('show');pulling=false;load();},2500))
+    .catch(()=>{pullTip.classList.remove('show');pulling=false;toast('触发失败，稍后再试');});
   }
   pullArmed=false;
 },{passive:true});
 
-/* ---- 自动刷新：每小时静默拉新数据（数据实时渲染不打扰） ---- */
 setInterval(load, 60*60*1000);
-
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
-load();
+loadSettings().then(load).catch(()=>load());
 </script>
 </body>
 </html>

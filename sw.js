@@ -1,4 +1,4 @@
-// AI 情报站 SW：网络优先（数据实时），失败回退缓存
+// 情报面板 SW：网络优先（数据实时），失败回退缓存
 const CACHE = 'intel-v7';
 const CORE = ['./index.html', './manifest.json'];
 
