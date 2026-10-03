@@ -91,11 +91,39 @@ def guess_vendor(title):
                 return vid
     return ""
 
+# 海外源：链接目标站可能被墙。每次采集前从本机(国内网络)探测域名可达性，
+# 不通 → 本轮跳过该源并清掉其旧条目（用户要求：国内打不开的站不展示）
+CN_BLOCKABLE = {"lowendbox", "freefordev", "freellm"}
+
+def site_ok(url, timeout=8):
+    """探测目标站从国内网络是否可达（HEAD 失败退回 GET 读一小段）"""
+    for method in ("HEAD", "GET"):
+        try:
+            req = Request(url, headers=UA, method=method)
+            with urlopen(req, timeout=timeout) as r:
+                if method == "GET":
+                    r.read(512)
+                return True
+        except Exception:
+            continue
+    return False
+
+def probe_overseas(sources):
+    """返回 {src_id: bool}；每个海外源测一次域名（feed 域名即条目域名）"""
+    verdict = {}
+    for src_id, vendor, name, url, limit in sources:
+        if src_id not in CN_BLOCKABLE:
+            continue
+        verdict[src_id] = site_ok(url)
+        print(f"[deals] probe {src_id} ({url.split('/')[2]}): {'OK' if verdict[src_id] else 'BLOCKED, skip+purge'}")
+    return verdict
+
 def collect_deals():
     results = []  # 全部抓完进内存再写库
+    overseas = probe_overseas(SOURCES)
     for src_id, vendor, name, url, limit in SOURCES:
-        if not url:
-            continue
+        if src_id in CN_BLOCKABLE and not overseas.get(src_id, False):
+            continue  # 国内不可达：不抓，稍后清旧条目
         xml = fetch_text(url)
         if not xml:
             continue
@@ -109,6 +137,10 @@ def collect_deals():
         return 0
     c = sqlite3.connect(DB, timeout=20)
     c.execute("PRAGMA busy_timeout=20000")
+    # 被墙源：清掉存量条目（用户不点开 404 链接）；源恢复后下轮自动重新入库
+    for src_id in CN_BLOCKABLE:
+        if not overseas.get(src_id, False):
+            c.execute("DELETE FROM deals WHERE src=?", (src_id,))
     total_new = 0
     for src_id, vendor, title, url, ts in results:
         dup = c.execute("SELECT 1 FROM deals WHERE title=? AND src=?", (title, src_id)).fetchone()
