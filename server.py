@@ -63,6 +63,10 @@ def db():
         repo TEXT, pr INTEGER, title TEXT, author TEXT,
         verdict TEXT, confidence REAL, summary TEXT, risks TEXT, created_at TEXT)""")
     c.execute("CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT)")
+    c.execute("""CREATE TABLE IF NOT EXISTS deals(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        src TEXT, vendor TEXT, title TEXT, url TEXT,
+        score INTEGER DEFAULT 0, fetched_at TEXT)""")
     return c
 
 # ---------- 设置 ----------
@@ -369,7 +373,7 @@ class H(BaseHTTPRequestHandler):
                 return
         d = BASE_DIR
         subprocess.Popen(["bash", "-c",
-            f"cd {d} && python3 server.py --collect; python3 cn_news.py; rm -f {lock}"],
+            f"cd {d} && python3 server.py --collect; python3 cn_news.py; python3 deals.py; rm -f {lock}"],
             stdout=open("/tmp/intel-collect.log", "a"), stderr=subprocess.STDOUT)
         subprocess.Popen(["bash", "-c", f"cd {d} && python3 pr_review.py --watch"],
             stdout=open("/tmp/intel-pr.log", "a"), stderr=subprocess.STDOUT)
@@ -574,10 +578,12 @@ class H(BaseHTTPRequestHandler):
                 repos = limit_rows(c, "SELECT * FROM repos")
                 news = limit_rows(c, "SELECT * FROM news ORDER BY id DESC LIMIT 120")
                 _apply_rec(repos, news, s["search_topics"])
+                deals = limit_rows(c, "SELECT * FROM deals ORDER BY id DESC LIMIT 150")
                 r = {
                     "myrepos": limit_rows(c, "SELECT * FROM myrepos ORDER BY full_name"),
                     "repos": repos[:30],
                     "news": news,
+                    "deals": deals,
                     "pr_reviews": limit_rows(c, "SELECT * FROM pr_reviews ORDER BY id DESC LIMIT 20"),
                     "updated": limit_rows(c, "SELECT MAX(fetched_at) AS t FROM news"),
                 }

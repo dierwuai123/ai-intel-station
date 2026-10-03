@@ -191,6 +191,7 @@ main{position:relative}
     <button class="tab on" data-t="my">📦 我的仓库 <span class="n" id="n-my">0</span></button>
     <button class="tab" data-t="tools">🛠 高分工具 <span class="n" id="n-tools">0</span></button>
     <button class="tab" data-t="news">📰 新闻 <span class="n" id="n-news-total">0</span></button>
+    <button class="tab" data-t="deals">🐑 羊毛资讯 <span class="n" id="n-deals">0</span></button>
   </div>
 </div>
 
@@ -219,6 +220,25 @@ main{position:relative}
       </div>
     </div>
     <div class="newslist" id="news"></div>
+  </section>
+
+  <section id="sec-deals" hidden>
+    <div class="sec-head"><h2>羊毛资讯</h2>
+      <div class="srcfilter" id="vendorfilter">
+        <button class="sf on" data-v="all">全部 <span class="n" id="n-vd-all">0</span></button>
+        <button class="sf" data-v="aliyun">阿里云 <span class="n" id="n-vd-aliyun">0</span></button>
+        <button class="sf" data-v="tencent">腾讯云 <span class="n" id="n-vd-tencent">0</span></button>
+        <button class="sf" data-v="huawei">华为云 <span class="n" id="n-vd-huawei">0</span></button>
+        <button class="sf" data-v="volc">火山 <span class="n" id="n-vd-volc">0</span></button>
+        <button class="sf" data-v="baidu">百度 <span class="n" id="n-vd-baidu">0</span></button>
+        <button class="sf" data-v="ailm">LLM免费额度 <span class="n" id="n-vd-ailm">0</span></button>
+        <button class="sf" data-v="overseas">海外云 <span class="n" id="n-vd-overseas">0</span></button>
+        <button class="sf" data-v="idc">IDC/VPS <span class="n" id="n-vd-idc">0</span></button>
+        <button class="sf" data-v="free">免费资源 <span class="n" id="n-vd-free">0</span></button>
+        <button class="sf" data-v="other">其他 <span class="n" id="n-vd-other">0</span></button>
+      </div>
+    </div>
+    <div class="newslist" id="deals"></div>
   </section>
 
   <section id="sec-set" hidden>
@@ -366,7 +386,7 @@ media.addEventListener('change', ()=>{ if(SETTINGS && SETTINGS.theme==='auto') a
 /* ---- Tab 切换 ---- */
 function showSection(key){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.t===key));
-  ['my','tools','news','set'].forEach(k=>{
+  ['my','tools','news','deals','set'].forEach(k=>{
     document.getElementById('sec-'+k).hidden = (k!==key);
   });
 }
@@ -383,6 +403,7 @@ document.getElementById('themeBtn').onclick=()=>{
 
 /* ---- 状态 ---- */
 let NEWS_MODE='rec';
+let DEALS_MODE='all';
 let DATA=null, SETTINGS=null;
 let pendSettings={topics:null,repos:null};
 
@@ -586,8 +607,32 @@ function render(d){
   document.getElementById('n-src-hn').textContent=hnN;
   document.getElementById('n-rec').textContent=news.filter(n=>n._rec).length;
   document.getElementById('n-news-total').textContent=news.length;
+  const deals=d.deals||[];
+  document.getElementById('n-deals').textContent=deals.length;
+  const V_ALL=['aliyun','tencent','huawei','volc','baidu','ailm','overseas','idc','free'];
+  const vCnt={other:0};
+  V_ALL.forEach(v=>vCnt[v]=0);
+  deals.forEach(x=>{ const v=x.vendor||'other'; (v in vCnt) ? vCnt[v]++ : vCnt.other++; });
+  V_ALL.forEach(v=>{ const el=document.getElementById('n-vd-'+v); if(el) el.textContent=vCnt[v]; });
+  document.getElementById('n-vd-all').textContent=deals.length;
+  const vo=document.getElementById('n-vd-other'); if(vo) vo.textContent=vCnt.other;
   document.getElementById('updated').textContent=(d.updated&&d.updated[0]&&d.updated[0].t)||'—';
-  renderNews(news); renderMy(my); renderTools(tools);
+  renderNews(news); renderMy(my); renderTools(tools); renderDeals(deals);
+}
+function renderDeals(deals){
+  const SRC_NAME={wzfou:'挖站否',zjpj:'主机测评',laozuo:'老蒋部落',itbulu:'老蒋IT',
+    appinn:'小众软件',txyfwq:'腾讯云活动',lowendbox:'LowEndBox',freefordev:'免费资源追踪',freellm:'免费LLM额度'};
+  const V_COLOR={aliyun:'#ff8a3d',tencent:'#4a9eff',huawei:'#e05252',volc:'#8f7bff',
+    baidu:'#5fc463',ailm:'#e0a458',overseas:'#57b8c9',idc:'#9aa3b8',free:'#5fd39a'};
+  let list = DEALS_MODE==='all' ? deals : deals.filter(x=>(x.vendor||'other')===DEALS_MODE);
+  document.getElementById('deals').innerHTML = list.map((x,i)=>{
+    const v=x.vendor||'other';
+    const vc=V_COLOR[v]||'#9aa3b8';
+    return '<a class="news" href="'+href(x.url)+'" target="_blank" rel="noopener noopener noreferrer">'+
+    '<span class="rank">'+(i+1)+'</span>'+
+    '<span class="tt"><em class="src-tag" style="color:'+vc+';border-color:'+vc+'">'+(SRC_NAME[x.src]||esc(x.src))+'</em> '+esc(x.title)+'</span>'+
+    '</a>';
+  }).join('') || '<div class="empty">暂无羊毛资讯，每日自动抓取<br>覆盖：阿里/腾讯/华为/火山 等云厂商优惠 + 免费 LLM 额度 + VPS 特价</div>';
 }
 function renderNews(news){
   let list;
@@ -668,6 +713,14 @@ document.getElementById('srcfilter').addEventListener('click',e=>{
   document.querySelectorAll('.sf').forEach(t=>t.classList.toggle('on',t===b));
   NEWS_MODE=b.dataset.s;
   if(DATA) renderNews(DATA.news);
+});
+
+/* ---- 羊毛厂商筛选 ---- */
+document.getElementById('vendorfilter').addEventListener('click',e=>{
+  const b=e.target.closest('.sf'); if(!b)return;
+  document.querySelectorAll('#vendorfilter .sf').forEach(t=>t.classList.toggle('on',t===b));
+  DEALS_MODE=b.dataset.v;
+  if(DATA) renderDeals(DATA.deals||[]);
 });
 
 /* ---- 下拉刷新 ---- */
