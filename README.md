@@ -18,6 +18,7 @@ Indie devs scatter work across repos and miss signals: a new fork, a hot PR, a c
 - **Repo tracking** — stars/forks/watchers/issues + latest release for any repos you list
 - **Trending tools** — GitHub search for high-star repos created in the last N days (query configurable)
 - **News** — Hacker News top stories + pluggable RSS feeds (defaults: IT之家 / Solidot / 少数派 / InfoQ)
+- **Deals intel (羊毛资讯)** — aggregates cloud-vendor promos & free-tier intel (Aliyun/Tencent/Huawei/Volc/Baidu vendor filter + free LLM API tracking + VPS deals); overseas feeds are reachability-probed from a CN network and auto-hidden if blocked
 - **AI PR review** — pulls PR diffs, asks an LLM (Volc Ark / OpenAI-compatible) for verdict `merge|reject|needs-review` with prompt-injection hardening; fully optional
 - **Auto translation** — batch-translates English descriptions/titles to Chinese (optional)
 - **Onboarding wizard** — first-run 3-step setup: paste a zero-permission GitHub token (guided), pick search topics & tracked repos; skippable, editable anytime in Settings
@@ -34,7 +35,7 @@ git clone https://github.com/dierwuai123/ai-intel-station.git
 cd ai-intel-station
 python3 server.py                 # http://localhost:8097
 # first data run / 首次采集：
-python3 server.py --collect && python3 cn_news.py
+python3 server.py --collect && python3 cn_news.py && python3 deals.py
 ```
 
 Open `http://localhost:8097`. That's it — no pip install, no config file required.
@@ -70,6 +71,7 @@ Any OpenAI-compatible endpoint works if you adapt the base URL in `cn_news.py` /
 ```cron
 10 6 * * * cd /path/to/ai-intel-station && python3 server.py --collect >> collect.log 2>&1
 25 6 * * * cd /path/to/ai-intel-station && python3 cn_news.py >> cnnews.log 2>&1
+30 6 * * * cd /path/to/ai-intel-station && python3 deals.py >> deals.log 2>&1
 35 6 * * * cd /path/to/ai-intel-station && python3 cn_news.py --translate >> translate.log 2>&1
 45 6 * * * cd /path/to/ai-intel-station && python3 pr_review.py --watch >> pr.log 2>&1
 ```

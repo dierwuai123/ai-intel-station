@@ -13,6 +13,7 @@
 - **仓库追踪** — 自选任意仓库的 stars/forks/watchers/issues + 最新 Release
 - **高分工具** — GitHub 搜索近 N 天新建的高星仓库（查询词可配）
 - **新闻聚合** — Hacker News 头条 + 可插拔 RSS（默认：IT之家 / Solidot / 少数派 / InfoQ）
+- **羊毛资讯** — 聚合云厂商优惠与免费额度情报（阿里/腾讯/华为/火山/百度等标签筛选 + 免费 LLM 额度追踪 + VPS 特价），海外源自动探测国内可达性，被墙即隐藏
 - **AI 审 PR** — 拉 PR diff → LLM（火山 Ark / OpenAI 兼容）出 verdict `merge|reject|needs-review`，带提示注入加固；完全可选
 - **自动翻译** — 英文描述/标题批量翻译成中文（可选）
 - **首次配置向导** — 首次打开三步引导：粘贴零权限 GitHub Token（含教程）、选兴趣方向、选追踪仓库；可跳过，设置里随时改
@@ -29,7 +30,7 @@ git clone https://github.com/dierwuai123/ai-intel-station.git
 cd ai-intel-station
 python3 server.py                 # http://localhost:8097
 # 首次采集：
-python3 server.py --collect && python3 cn_news.py
+python3 server.py --collect && python3 cn_news.py && python3 deals.py
 ```
 
 打开 `http://localhost:8097` 即可。无需 pip install，无必需配置文件。
@@ -61,6 +62,7 @@ python3 pr_review.py --watch              # AI 审核追踪仓库的所有 open 
 ```cron
 10 6 * * * cd /path/to/ai-intel-station && python3 server.py --collect >> collect.log 2>&1
 25 6 * * * cd /path/to/ai-intel-station && python3 cn_news.py >> cnnews.log 2>&1
+30 6 * * * cd /path/to/ai-intel-station && python3 deals.py >> deals.log 2>&1
 35 6 * * * cd /path/to/ai-intel-station && python3 cn_news.py --translate >> translate.log 2>&1
 45 6 * * * cd /path/to/ai-intel-station && python3 pr_review.py --watch >> pr.log 2>&1
 ```

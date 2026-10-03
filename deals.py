@@ -8,6 +8,7 @@
 """
 import json, os, re, sqlite3, sys, time
 from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 
 DB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "intel.db")
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", "Accept": "*/*"}
@@ -19,7 +20,7 @@ def fetch_text(url, timeout=20):
     try:
         req = Request(url, headers=UA)
         with urlopen(req, timeout=timeout) as r:
-            return r.read().decode("utf-8", errors="replace")
+            return r.read(5_000_000).decode("utf-8", errors="replace")  # 5MB 上限防异常 feed 撑爆内存
     except Exception as e:
         print(f"[deals] fetch {url} err: {e}")
         return ""
@@ -53,10 +54,6 @@ def parse_rss_items(xml, limit=15):
             if len(items) >= limit: break
     return items
 
-def _clean_gh_commit_title(t):
-    """GitHub commit atom 标题形如 "Update README.md" 无信息量，用仓库语义标题替代"""
-    return t
-
 # (src_id, 厂商标签, 展示名, feed地址, 每源条数)
 SOURCES = [
     ("wzfou",     "idc",   "挖站否",   "https://www.wzfou.com/feed/", 12),
@@ -78,11 +75,8 @@ VENDOR_RULES = [
     ("volc",    ["火山", "方舟", "豆包", " doubao", "Seedream"]),
     ("baidu",   ["百度", "千帆", "文心"]),
     ("ailm",    ["免费LLM", "免费大模型", "LLM API", "tokens", "大模型API", "free llm", "免费额度"]),
-    ("oracle",  ["甲骨文", "Oracle", "ARM"]),
-    ("aws",     ["AWS", "亚马逊", "Amazon"]),
-    ("azure",   ["Azure", "微软云"]),
-    ("gcp",     ["Google Cloud", "GCP", "谷歌云"]),
 ]
+# 注：oracle/aws/azure/gcp 不设独立标签——海外云 chip 由 lowendbox 源覆盖，其余厂商自然落「其他」
 
 def guess_vendor(title):
     for vid, kws in VENDOR_RULES:
@@ -91,39 +85,80 @@ def guess_vendor(title):
                 return vid
     return ""
 
-# 海外源：链接目标站可能被墙。每次采集前从本机(国内网络)探测域名可达性，
-# 不通 → 本轮跳过该源并清掉其旧条目（用户要求：国内打不开的站不展示）
+# 海外源：链接目标站可能被墙。每次采集前从本机(国内网络)探测域名可达性。
+# - 网络级失败(超时/DNS/重置) = GFW 式阻断：连续 2 轮才跳过+清存量（防瞬时抖动误删）
+# - HTTP 403/429/405 = 站点可达但反爬拦脚本：仅本轮跳过，不清存量（浏览器仍能打开）
 CN_BLOCKABLE = {"lowendbox", "freefordev", "freellm"}
+PROBE_STATE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".deals_probe.json")
+PURGE_AFTER = 2  # 连续失败轮数
 
 def site_ok(url, timeout=8):
-    """探测目标站从国内网络是否可达（HEAD 失败退回 GET 读一小段）"""
+    """返回 'ok' | 'challenge'(HTTP 4xx 反爬) | 'blocked'(网络级不通)"""
     for method in ("HEAD", "GET"):
         try:
             req = Request(url, headers=UA, method=method)
             with urlopen(req, timeout=timeout) as r:
                 if method == "GET":
                     r.read(512)
-                return True
+                if r.status < 400:
+                    return "ok"
+        except HTTPError as e:
+            if e.code in (403, 429, 405):
+                return "challenge"  # 反爬/限流：站点本身可达
+            return "blocked"
         except Exception:
-            continue
-    return False
+            continue  # HEAD 不支持时退 GET
+    return "blocked"
+
+def _probe_counts():
+    try:
+        return json.loads(open(PROBE_STATE).read())
+    except Exception:
+        return {}
 
 def probe_overseas(sources):
-    """返回 {src_id: bool}；每个海外源测一次域名（feed 域名即条目域名）"""
+    """返回 {src_id: 'ok'|'challenge'|'blocked'}；blocked 记连续失败计数（>=2 轮才判死）"""
     verdict = {}
+    counts = _probe_counts()
+    dirty = False
     for src_id, vendor, name, url, limit in sources:
         if src_id not in CN_BLOCKABLE:
             continue
-        verdict[src_id] = site_ok(url)
-        print(f"[deals] probe {src_id} ({url.split('/')[2]}): {'OK' if verdict[src_id] else 'BLOCKED, skip+purge'}")
+        v = site_ok(url)
+        verdict[src_id] = v
+        if v == "ok":
+            if counts.get(src_id):
+                counts[src_id] = 0
+                dirty = True
+        elif v == "blocked":
+            counts[src_id] = counts.get(src_id, 0) + 1
+            dirty = True
+            if counts[src_id] < PURGE_AFTER:
+                v = "grace"  # 首轮失败：观察，暂不清
+                verdict[src_id] = v
+        print(f"[deals] probe {src_id} ({url.split('/')[2]}): {v} fail_n={counts.get(src_id, 0)}")
+    if dirty:
+        try:
+            fd = os.open(PROBE_STATE, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+            with os.fdopen(fd, "w") as f:
+                json.dump(counts, f)
+        except Exception:
+            pass
+    elif not os.path.exists(PROBE_STATE):
+        try:  # 首轮全 ok 也落盘，便于观察计数状态
+            fd = os.open(PROBE_STATE, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+            with os.fdopen(fd, "w") as f:
+                json.dump(counts, f)
+        except Exception:
+            pass
     return verdict
 
 def collect_deals():
     results = []  # 全部抓完进内存再写库
     overseas = probe_overseas(SOURCES)
     for src_id, vendor, name, url, limit in SOURCES:
-        if src_id in CN_BLOCKABLE and not overseas.get(src_id, False):
-            continue  # 国内不可达：不抓，稍后清旧条目
+        if src_id in CN_BLOCKABLE and overseas.get(src_id) != "ok":
+            continue  # 被墙/反爬：本轮不抓（purge 仅在 blocked 判死后进行，见下）
         xml = fetch_text(url)
         if not xml:
             continue
@@ -137,9 +172,9 @@ def collect_deals():
         return 0
     c = sqlite3.connect(DB, timeout=20)
     c.execute("PRAGMA busy_timeout=20000")
-    # 被墙源：清掉存量条目（用户不点开 404 链接）；源恢复后下轮自动重新入库
+    # 网络级被墙且连续 >=2 轮：清存量（用户点不开 404 链接就不该看到）；反爬(4xx)/观察期(grace)不清
     for src_id in CN_BLOCKABLE:
-        if not overseas.get(src_id, False):
+        if overseas.get(src_id) == "blocked":
             c.execute("DELETE FROM deals WHERE src=?", (src_id,))
     total_new = 0
     for src_id, vendor, title, url, ts in results:
